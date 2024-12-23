@@ -1,0 +1,22 @@
+{
+  "name": "barelycool_neocity",
+  "version": "1.0.0",
+  "description": "IDK tbh... just learning",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mowgl-i/barelycool_neocity.git"
+  },
+  "author": "mowgster",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mowgl-i/barelycool_neocity/issues"
+  },
+  "homepage": "https://github.com/mowgl-i/barelycool_neocity#readme",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
