@@ -16,15 +16,14 @@ concurrency: # prevent concurrent deploys doing strange things
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     # When the dist_dir is ready, deploy it to neocities
     - name: Deploy to neocities
-      uses: bcomnes/deploy-to-neocities@master # dont use master in production
+      uses: bcomnes/deploy-to-neocities@v3.0.2 # dont use master in production
       with:
         api_key: ${{ secrets.NEOCITIES_API_TOKEN }}
-        cleanup: true
+        cleanup: false
         dist_dir: public
         neocities_supporter: true # set this to true if you have a supporter account and want to bypass unsuported files filter.
-        preview_before_deploy: true
+        preview_before_deploy: false
