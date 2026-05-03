@@ -1,32 +1,514 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The web site of barelycool</title>
-    <!-- The style.css file allows you to change the look of your web pages.
-         If you include the next line in all your web pages, they will all share the same look.
-         This makes it easier to make new pages for your site. -->
-    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
-  </head>
-  <body>
-    <h1>Welcome to my Website!</h1>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>barely.cool — 20nup by BarelyCool LLC</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="20nup by BarelyCool LLC — build log, drygoods, and the car. Est. Neocities MMXXIV.">
+<meta name="keywords" content="barelycool, 20nup, streetwear, patches, stickers, neocities, lowrider">
+<meta name="author" content="BarelyCool LLC">
 
-    <p>Testing the waters from local repo <a href="https://neocities.org">Neocities</a>.</p>
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://barelycool.neocities.org/">
+<meta property="og:title" content="barely.cool — 20nup by BarelyCool LLC">
+<meta property="og:description" content="Build log, drygoods, and the car.">
+<meta property="og:image" content="https://barelycool.neocities.org/img/header.jpg">
 
-    <p>Here's how you can make <strong>bold</strong> and <em>italic</em> text.</p>
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://barelycool.neocities.org/">
+<meta property="twitter:title" content="barely.cool — 20nup by BarelyCool LLC">
+<meta property="twitter:description" content="Build log, drygoods, and the car.">
+<meta property="twitter:image" content="https://barelycool.neocities.org/img/header.jpg">
 
-    <p>Here's how you can add an image:</p>
-    <img src="/neocities.png">
+<style>
+  html, body { margin: 0; padding: 0; background: #02040a; min-height: 100vh; }
+  body {
+    font-family: ui-monospace, "JetBrains Mono", "Courier New", monospace;
+    color: #39ff14;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(57,255,20,0.06), transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(57,255,20,0.04), transparent 60%),
+      #02040a;
+    background-attachment: fixed;
+  }
+  ::selection { background: #39ff14; color: #000; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #06080a; }
+  ::-webkit-scrollbar-thumb { background: rgba(57,255,20,0.25); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(57,255,20,0.5); }
+  /* fc2 counter resets */
+  #fc2-counter { display: inline; line-height: 1; }
+  #fc2-counter img { vertical-align: middle; max-height: 20px; }
+</style>
 
-    <p>Here's how to make a list:</p>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+        integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+        integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+        integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+        crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="root"></div>
 
-    <ul>
-      <li>Testing</li>
-      <li>CI/CD from</li>
-      <li>local -> github actions</li>
-    </ul>
+<script type="text/babel" src="js/tweaks-panel.js"></script>
+<script type="text/babel" src="js/flatlay-shop.js"></script>
 
-    <p>To learn more HTML/CSS, check out these <a href="https://neocities.org/tutorials">tutorials</a>!</p>
-  </body>
+<script type="text/babel" data-presets="react">
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accent": "#30ff14",
+    "scanlines": true,
+    "mascot": true,
+    "phosphor": true
+  }/*EDITMODE-END*/;
+
+  function Page() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    const accent = t.accent;
+
+    const accentRgb = (() => {
+      const h = accent.replace('#', '');
+      const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    })();
+    const rgba = (a) => `rgba(${accentRgb.join(',')},${a})`;
+
+    // cart state
+    const [cart, setCart] = React.useState([]);
+    const [cmdLog, setCmdLog] = React.useState([
+      { kind: 'sys', text: 'mowgli@barely.cool ▸ tty1 ▸ welcome' },
+      { kind: 'sys', text: 'type "help" or click any item above' },
+    ]);
+    const [typing, setTyping] = React.useState('');
+    const [input, setInput] = React.useState('');
+
+    React.useEffect(() => {
+      const onAdd = (e) => {
+        const it = e.detail;
+        const sizeFlag = it.size ? ` --size ${it.size}` : '';
+        const fullCmd = `add ${it.sku}${sizeFlag} --qty 1`;
+        const label = it.size ? `${it.name} [${it.size}]` : it.name;
+        let i = 0;
+        const tick = () => {
+          if (i <= fullCmd.length) {
+            setTyping(fullCmd.slice(0, i));
+            i++; setTimeout(tick, 28);
+          } else {
+            setTyping('');
+            setCmdLog((l) => [
+              ...l,
+              { kind: 'cmd', text: `$ ${fullCmd}` },
+              { kind: 'ok',  text: `▸ added: ${label} (${it.sku}) +$${it.price} → cart` },
+            ].slice(-8));
+            setCart((c) => [...c, it]);
+          }
+        };
+        tick();
+      };
+      window.addEventListener('bc-cart-add', onAdd);
+      return () => window.removeEventListener('bc-cart-add', onAdd);
+    }, []);
+
+    const runCmd = (raw) => {
+      const cmd = raw.trim().toLowerCase();
+      if (!cmd) return;
+      let out = [{ kind: 'cmd', text: `$ ${raw}` }];
+      if (cmd === 'help') {
+        out.push({ kind: 'sys', text: '  cart      ▸ show cart' });
+        out.push({ kind: 'sys', text: '  clear     ▸ empty cart' });
+        out.push({ kind: 'sys', text: '  checkout  ▸ go to checkout' });
+        out.push({ kind: 'sys', text: '  ls        ▸ list items' });
+        out.push({ kind: 'sys', text: '  mail      ▸ mowgli@barely.cool' });
+      } else if (cmd === 'cart') {
+        if (cart.length === 0) out.push({ kind: 'sys', text: '▸ cart empty' });
+        else {
+          cart.forEach((x, i) => {
+            const sz = x.size ? ` [${x.size}]` : '';
+            out.push({ kind: 'sys', text: `  ${String(i + 1).padStart(2, '0')}. ${x.sku}${sz}  ${x.name}  $${x.price}.00` });
+          });
+          const total = cart.reduce((s, x) => s + x.price, 0);
+          out.push({ kind: 'ok', text: `▸ ${cart.length} item${cart.length > 1 ? 's' : ''} ▸ subtotal $${total}.00` });
+        }
+      } else if (cmd === 'clear') {
+        setCart([]);
+        out.push({ kind: 'ok', text: '▸ cart cleared' });
+      } else if (cmd === 'checkout') {
+        if (cart.length === 0) {
+          out.push({ kind: 'err', text: '▸ cart is empty' });
+        } else {
+          out.push({ kind: 'ok', text: '▸ redirecting to checkout...' });
+          setTimeout(() => { window.location.href = 'mailto:mowgli@barely.cool?subject=Order'; }, 800);
+        }
+      } else if (cmd === 'ls') {
+        out.push({ kind: 'sys', text: '▸ scroll up — flatlay above. click to inspect.' });
+      } else if (cmd === 'mail' || cmd === 'email') {
+        out.push({ kind: 'ok', text: '▸ mowgli@barely.cool — if you email me dumb stuff you will get your head blown off' });
+      } else if (cmd === 'sudo rm -rf /') {
+        out.push({ kind: 'err', text: '▸ nice try' });
+      } else {
+        out.push({ kind: 'err', text: `▸ unknown command: ${raw} — try "help"` });
+      }
+      setCmdLog((l) => [...l, ...out].slice(-8));
+      setInput('');
+    };
+
+    return (
+      <div style={{
+        maxWidth: 1100, margin: '0 auto', padding: '20px 18px 220px',
+        position: 'relative',
+      }}>
+        {/* CRT title bar */}
+        <div style={{
+          background: '#06080a', border: `1px solid ${rgba(0.22)}`,
+          padding: '6px 14px', display: 'flex', justifyContent: 'space-between',
+          fontSize: 11, color: rgba(0.5),
+        }}>
+          <span>barely.cool ▸ /home/mowgli ▸ tty1</span>
+          <span>SESS 04219081 ▸ {new Date().toLocaleDateString('en-US')} ▸ uptime 19h ▸ cart [{cart.length}]</span>
+        </div>
+
+        {/* ASCII header */}
+        <div style={{
+          padding: '20px 14px 10px',
+          border: `1px solid ${rgba(0.22)}`, borderTop: 'none',
+          textAlign: 'center',
+        }}>
+          <pre style={{
+            margin: 0, fontSize: 13, color: accent, lineHeight: 1.0,
+            textShadow: t.phosphor ? `0 0 6px ${accent}` : 'none',
+            display: 'inline-block', textAlign: 'left',
+          }}>
+{`  ____    __    ____  ____  __    _  _   ___  __  __   __
+ (  _ \\  /  \\  (  _ \\(  __)(  )  ( \\/ ) / __)/  \\/  \\ (  )
+  ) _ ( /    \\  )   / ) _) / (_/\\ )  / ( (__(  O )(  O )/ /
+ (____/ \\_/\\_/ (__\\_)(____)\\____/(__/   \\___)\\__/  \\__/(__) `}
+          </pre>
+          <div style={{ fontSize: 11, color: rgba(0.5), marginTop: 6, letterSpacing: 2 }}>
+            [ build log + drygoods · 20nup ent · est. neocities mmxxiv ]
+          </div>
+        </div>
+
+        {/* nav */}
+        <div style={{
+          display: 'flex', padding: '0', borderTop: `1px solid ${rgba(0.22)}`,
+          fontSize: 12,
+        }}>
+          {['log', 'shop', 'car', 'links', 'about'].map((c, i) => (
+            <a key={c} href={'#' + c} style={{
+              padding: '8px 16px', borderRight: `1px solid ${rgba(0.22)}`,
+              color: i === 0 ? '#000' : accent,
+              background: i === 0 ? accent : 'transparent',
+              textDecoration: 'none', fontWeight: 700,
+              textShadow: i === 0 || !t.phosphor ? 'none' : `0 0 4px ${accent}`,
+            }}>
+              <span style={{ color: i === 0 ? '#000' : rgba(0.5) }}>./</span>{c}
+            </a>
+          ))}
+          <div style={{ flex: 1, borderRight: `1px solid ${rgba(0.22)}`, padding: '8px 12px',
+            color: rgba(0.5), fontSize: 11, textAlign: 'right',
+          }}>uid=mowgli ▸ visitors:<span id="nav-counter">040219081</span></div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px',
+          border: `1px solid ${rgba(0.22)}`, borderTop: 'none',
+        }}>
+          {/* MAIN */}
+          <div style={{ padding: '18px', borderRight: `1px solid ${rgba(0.22)}` }}>
+            {/* build log */}
+            <div id="log" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 10 }}>
+              ─[ /var/log/build.txt ]──────────────────────────────────────
+            </div>
+
+            {[
+              { d: '2026-04-29', h: 'oil_pan_4_cracked.txt', sz: '2.1k',
+                body: '> lowered her another 3/4". hit a manhole cover @ 12mph.\n> oil pan #4 dead. there is a metaphor here.\n> patch on the press by friday. ETA pan #5: tuesday. ETA regret: now.' },
+              { d: '2026-04-14', h: 'spring_batch_shipped.txt', sz: '0.8k',
+                body: '> all preorders for work shirt #2 shipped mon.\n> 7 tees + 3 stickers + 1 stray patch left from this run.\n> if yours hasn\'t shown by next week ping me.' },
+              { d: '2026-03-14', h: 'in_house_press.txt', sz: '1.4k',
+                body: '> outsourcing patches @ $10/ea was a tax. machine arrived tues.\n> first run cleared in 6 days. savings get passed on. that\'s the point. :>' },
+              { d: '2024-03-14', h: 'better_late_than_never.txt', sz: '0.5k',
+                body: '> one bottle neck to drop #1: needed to outsource the patch work ($10/ea.. wtf).\n> now i have my own machine. passing the savings on to you. :>' },
+              { d: '2024-02-07', h: 'found_my_footing.txt', sz: '0.4k',
+                body: '> at first i lost hope with this html stuff.. but i understand it now.\n> ben davis 1/2 zips made it to a few friends. ordering more shirt boards.\n> ready to start taking orders by end of feb. work shirt #2 in the teaser queue.' },
+            ].map((p, i) => (
+              <div key={i} style={{ marginBottom: 14, paddingBottom: 10,
+                borderBottom: `1px dashed ${rgba(0.22)}` }}>
+                <div style={{ display: 'flex', gap: 10, fontSize: 11, color: rgba(0.5),
+                  flexWrap: 'wrap' }}>
+                  <span>{p.d}</span>
+                  <span style={{ color: accent, fontWeight: 700,
+                    textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none' }}>▸ {p.h}</span>
+                  <span>{p.sz}</span>
+                </div>
+                <pre style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap',
+                  fontFamily: 'inherit', fontSize: 13, color: accent, lineHeight: 1.5,
+                  textShadow: t.phosphor ? `0 0 3px ${accent}` : 'none' }}>{p.body}</pre>
+              </div>
+            ))}
+
+            {/* SHOP — flatlay */}
+            <div id="shop" style={{ fontSize: 11, color: rgba(0.5), margin: '24px 0 10px' }}>
+              ─[ /opt/shop/flatlay.png ]────────── render: 6 items ──────
+            </div>
+
+            <FlatlayShop accent={accent} />
+
+            <div style={{ marginTop: 10, fontSize: 11, color: rgba(0.5),
+              display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <span>6 items ▸ 0 sold out ▸ 1 preorder ▸ ship usps fri</span>
+              <span>// chaos.layout v0.4 ▸ powered by tape</span>
+            </div>
+          </div>
+
+          {/* SIDEBAR */}
+          <aside style={{ padding: '16px 14px', fontSize: 12 }}>
+            <div id="car" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 6 }}>─[ ~/the_car ]─────────</div>
+            <pre style={{
+              margin: 0, padding: 10, border: `1px solid ${rgba(0.22)}`, background: '#06080a',
+              color: accent, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
+              whiteSpace: 'pre-wrap',
+              textShadow: t.phosphor ? `0 0 3px ${accent}` : 'none',
+            }}>
+{`year     │ 1987
+chassis  │ MX73 wgn
+engine   │ 7M, na, tired
+sus      │ static, -4.5"
+front    │ 15x9  -25
+rear     │ 15x10 -32
+fender   │ +12mm pull
+welds    │ driveway grade
+status   │ rolling on faith`}
+            </pre>
+
+            <div id="about" style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/contact ]─────────</div>
+            <div style={{
+              padding: 10, border: `1px solid ${rgba(0.22)}`, background: '#06080a',
+            }}>
+              <div style={{ fontSize: 11, color: rgba(0.5) }}>$ cat email.txt</div>
+              <a href="mailto:mowgli@barely.cool" style={{
+                display: 'block', fontSize: 14, color: '#fff', margin: '4px 0', fontWeight: 700,
+                textDecoration: 'none',
+                textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none',
+              }}>mowgli@barely.cool</a>
+              <div style={{ fontSize: 11, color: rgba(0.5), marginTop: 6, lineHeight: 1.5 }}>
+                # WARNING<br/>
+                # if you email me dumb stuff<br/>
+                # you will get your head blown off<br/>
+                # this is not a joke
+              </div>
+              <pre style={{ margin: '6px 0 0', fontSize: 12, color: '#ff5544', lineHeight: 1 }}>
+{`   ___
+  /(__\\
+ ( _-_ )
+  \\___/ -==o)`}
+              </pre>
+            </div>
+
+            <div id="links" style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/bookmarks ]──────</div>
+            <div style={{ fontSize: 12, lineHeight: 1.7 }}>
+              <div>→ slammedsociety</div>
+              <div>→ hagerty-but-not</div>
+              <div>→ tuesday-meet</div>
+              <div>→ fenderroller-coop</div>
+              <div style={{ color: rgba(0.5) }}>→ your_site_here.html</div>
+            </div>
+
+            <div style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/uptime ]─────────</div>
+            <div style={{
+              padding: '8px 10px', border: `1px solid ${rgba(0.22)}`, background: '#06080a',
+              fontSize: 18, letterSpacing: 4, textAlign: 'center',
+              color: accent, textShadow: t.phosphor ? `0 0 6px ${accent}` : 'none',
+            }}>
+              <Fc2Counter id="40219080" />
+            </div>
+            <div style={{ fontSize: 10, color: rgba(0.5), textAlign: 'center', marginTop: 4 }}>visitors since 2024</div>
+          </aside>
+        </div>
+
+        {/* footer status bar */}
+        <div style={{
+          background: accent, color: '#000', padding: '4px 14px', fontSize: 11,
+          display: 'flex', justifyContent: 'space-between', fontWeight: 700,
+          flexWrap: 'wrap', gap: 8,
+        }}>
+          <span>NORMAL ▸ /home/mowgli ▸ utf-8 ▸ unix</span>
+          <span>©2026 20nup by BarelyCool LLC ▸ neocities ▸ no js no cookies no shame</span>
+          <span>Ln 04 ▸ Col 29 ▸ 100%</span>
+        </div>
+
+        {/* sticky terminal cart */}
+        <CartTerminal
+          accent={accent} rgba={rgba} cart={cart} cmdLog={cmdLog} typing={typing}
+          input={input} setInput={setInput} runCmd={runCmd} phosphor={t.phosphor}
+        />
+
+        {t.mascot && <Mascot accent={accent} />}
+
+        {t.scanlines && (
+          <div style={{
+            position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1000,
+            backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,.32) 0 1px, transparent 1px 3px)',
+          }} />
+        )}
+        <div style={{
+          position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 999,
+          background: 'radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.55) 100%)',
+        }} />
+
+        <TweaksPanel title="Tweaks">
+          <TweakSection label="Display" />
+          <TweakColor  label="Accent" value={t.accent} onChange={(v) => setTweak('accent', v)} />
+          <TweakToggle label="CRT scanlines" value={t.scanlines} onChange={(v) => setTweak('scanlines', v)} />
+          <TweakToggle label="Phosphor glow" value={t.phosphor} onChange={(v) => setTweak('phosphor', v)} />
+          <TweakSection label="Chrome" />
+          <TweakToggle label="Mascot" value={t.mascot} onChange={(v) => setTweak('mascot', v)} />
+        </TweaksPanel>
+      </div>
+    );
+  }
+
+  function CartTerminal({ accent, rgba, cart, cmdLog, typing, input, setInput, runCmd, phosphor }) {
+    const total = cart.reduce((s, x) => s + x.price, 0);
+    const inputRef = React.useRef(null);
+    const logRef = React.useRef(null);
+    React.useEffect(() => {
+      if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+    }, [cmdLog, typing]);
+
+    return (
+      <div style={{
+        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 100,
+        background: '#06080a', borderTop: `1px solid ${accent}`,
+        boxShadow: phosphor ? `0 -4px 20px ${rgba(0.25)}` : 'none',
+        fontFamily: 'inherit', color: accent,
+      }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '8px 18px',
+          display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'stretch' }}>
+          <div onClick={() => inputRef.current && inputRef.current.focus()}
+            style={{ cursor: 'text' }}>
+            <div ref={logRef} style={{
+              maxHeight: 110, overflowY: 'auto', fontSize: 12, lineHeight: 1.5,
+              marginBottom: 4, paddingRight: 8,
+            }}>
+              {cmdLog.map((l, i) => (
+                <div key={i} style={{
+                  color: l.kind === 'err' ? '#ff5544' : l.kind === 'ok' ? accent : l.kind === 'sys' ? rgba(0.55) : '#fff',
+                  textShadow: phosphor && l.kind !== 'err' ? `0 0 3px currentColor` : 'none',
+                }}>{l.text}</div>
+              ))}
+              {typing && (
+                <div style={{ color: '#fff' }}>$ {typing}<span style={{
+                  display: 'inline-block', width: 7, height: 12, background: accent,
+                  marginLeft: 2, animation: 'blink 1s steps(2) infinite', verticalAlign: 'middle',
+                }} /></div>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+              <span style={{ color: accent, fontWeight: 700,
+                textShadow: phosphor ? `0 0 4px ${accent}` : 'none' }}>mowgli@barely.cool:~$</span>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') runCmd(input); }}
+                placeholder='type "help"'
+                style={{
+                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  color: '#fff', fontFamily: 'inherit', fontSize: 13, caretColor: accent,
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ borderLeft: `1px solid ${rgba(0.22)}`, paddingLeft: 16, fontSize: 11 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between',
+              color: rgba(0.55), marginBottom: 4, letterSpacing: 1 }}>
+              <span>// cart.json</span>
+              <span>{cart.length} item{cart.length === 1 ? '' : 's'}</span>
+            </div>
+            <div style={{ maxHeight: 80, overflowY: 'auto', marginBottom: 6 }}>
+              {cart.length === 0 ? (
+                <div style={{ color: rgba(0.45), fontSize: 11 }}>{'{ "items": [] }'}</div>
+              ) : cart.map((it, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
+                  fontSize: 12, padding: '1px 0' }}>
+                  <span style={{ color: '#fff' }}>{it.sku}</span>
+                  <span style={{ color: accent }}>${it.price}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between',
+              borderTop: `1px dashed ${rgba(0.22)}`, paddingTop: 4,
+              fontSize: 13, fontWeight: 700,
+              textShadow: phosphor ? `0 0 4px ${accent}` : 'none' }}>
+              <span>SUBTOTAL</span>
+              <span>${total}.00</span>
+            </div>
+            <button
+              onClick={() => cart.length && runCmd('checkout')}
+              disabled={cart.length === 0}
+              style={{
+                width: '100%', marginTop: 6, padding: '6px',
+                background: cart.length ? accent : 'transparent',
+                color: cart.length ? '#000' : rgba(0.4),
+                border: `1px solid ${cart.length ? accent : rgba(0.3)}`,
+                fontFamily: 'inherit', fontWeight: 900, fontSize: 12,
+                cursor: cart.length ? 'pointer' : 'not-allowed',
+                letterSpacing: 2,
+              }}>$ checkout --pay</button>
+          </div>
+        </div>
+        <style>{`@keyframes blink{50%{opacity:0}}`}</style>
+      </div>
+    );
+  }
+
+  function Mascot({ accent }) {
+    const [winked, setWinked] = React.useState(false);
+    return (
+      <div style={{
+        position: 'fixed', right: 14, bottom: 160, zIndex: 90,
+        cursor: 'pointer',
+      }} onClick={() => setWinked((w) => !w)} title="click me">
+        <div style={{
+          padding: '6px 6px 4px', background: '#06080a', border: `1px solid ${accent}`,
+          boxShadow: `0 0 12px ${accent}`,
+          fontFamily: 'ui-monospace, monospace',
+        }}>
+          <div style={{ fontSize: 9, color: 'rgba(57,255,20,0.55)',
+            letterSpacing: 1, marginBottom: 4, textAlign: 'center' }}>[ mascot.gif ]</div>
+          <div style={{
+            width: 72, height: 72, background: '#02040a',
+            border: `1px dashed rgba(57,255,20,0.35)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 28, color: accent, lineHeight: 1,
+            textShadow: `0 0 6px ${accent}`,
+          }}>{winked ? '(=^- ^=)' : '(=^o.o^=)'}</div>
+          <div style={{ fontSize: 9, color: accent, marginTop: 4, textAlign: 'center',
+            letterSpacing: 1 }}>BARELYCAT</div>
+        </div>
+      </div>
+    );
+  }
+
+  function Fc2Counter({ id }) {
+    const ref = React.useRef(null);
+    React.useEffect(() => {
+      if (!ref.current) return;
+      const s = document.createElement('script');
+      s.src = `//counter1.fc2.com/counter.php?id=${id}&main=1`;
+      ref.current.appendChild(s);
+    }, [id]);
+    return <span ref={ref} />;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<Page />);
+</script>
+</body>
 </html>
