@@ -21,6 +21,28 @@ function FlatlayShop({ accent = '#39ff14' }) {
   const [open, setOpen] = React.useState(null);  // sku
   const [pop, setPop] = React.useState(null);
   const [size, setSize] = React.useState({});    // sku -> selected size
+  const [containerWidth, setContainerWidth] = React.useState(null);
+  const flatLayRef = React.useRef(null);
+
+  // Track flatlay container width for responsive scaling
+  React.useEffect(() => {
+    const container = flatLayRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      setContainerWidth(container.offsetWidth);
+    });
+    observer.observe(container);
+    setContainerWidth(container.offsetWidth);
+    return () => observer.disconnect();
+  }, []);
+
+  // Scale items based on container width (relative to 1100px baseline)
+  const scaleFactor = containerWidth ? containerWidth / 1100 : 1;
+  const scaledItems = items.map(it => ({
+    ...it,
+    w: Math.round(it.w * scaleFactor)
+  }));
 
   // Close detail card on outside click / esc
   React.useEffect(() => {
@@ -47,7 +69,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
   };
 
   return (
-    <div style={{
+    <div ref={flatLayRef} style={{
       position: 'relative', width: '100%', minHeight: 760,
       border: `1px solid ${faint}`, background: '#06080a',
       backgroundImage:
@@ -77,7 +99,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
       }}>// click any item to inspect</div>
 
       {/* items */}
-      {items.map((it) => {
+      {scaledItems.map((it) => {
         const sold = it.stock === 'sold out';
         const isHover = hover === it.sku;
         const isOpen = open === it.sku;
@@ -122,7 +144,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
 
       {/* detail card — pinned near the open item, no rotation */}
       {open && (() => {
-        const it = items.find((x) => x.sku === open);
+        const it = scaledItems.find((x) => x.sku === open);
         if (!it) return null;
         // anchor card relative to item; flip to left side if item is right of center
         const onRight = it.x > 50;
