@@ -13,7 +13,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
       glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
     { sku: 'RT-001', name: 'rust_tee',        price: 35, stock: '12 left',  x: 6,  y: 60, w: 230, r: 10,  z: 3, kind: 'tee',
       glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
-    { sku: 'SI-001', name: 'stroked_image',   price: 5,  stock: 'in stock', x: 28, y: 40, w: 130, r: 8,   z: 4, kind: 'sticker',
+    { sku: 'SI-001', name: 'clanker_sticker',  price: 5,  stock: 'in stock', x: 28, y: 40, w: 390, r: 8,   z: 4, kind: 'sticker',
       glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
   ];
 
@@ -227,8 +227,10 @@ function ItemPlaceholder({ kind, glyph, accent, image }) {
     letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase' };
 
   if (image) return (
-    <div style={{ filter: dropShadow, position: 'relative' }}>
-      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt="product" />
+    <div style={{ filter: dropShadow, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
+        letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase', marginBottom: 6 }}>Clanker sticker</div>
+      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt="Clanker sticker" />
     </div>
   );
 
