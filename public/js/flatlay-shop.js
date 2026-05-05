@@ -7,7 +7,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
   const dim = 'rgba(57,255,20,0.5)';
   const faint = 'rgba(57,255,20,0.22)';
 
-  // 6 items. tees carry sizes; flat goods carry dims.
+  // 7 items. tees carry sizes; flat goods carry dims.
   const items = [
     { sku: 'WS-002', name: 'work_shirt_no2',  price: 45, stock: '7 left',   x: 4,  y: 22, w: 240, r: -6,  z: 3, kind: 'tee',
       glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
@@ -21,6 +21,8 @@ function FlatlayShop({ accent = '#39ff14' }) {
       glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
     { sku: 'NP-001', name: '20nup_pin',       price: 6,  stock: 'in stock', x: 42, y: 72, w: 90,  r: -8,  z: 6, kind: 'pin',
       glyph: '20', dims: '1.25" enamel', material: 'soft enamel, rubber clutch' },
+    { sku: 'SI-001', name: 'stroked_image',   price: 5,  stock: 'in stock', x: 28, y: 40, w: 130, r: 8,   z: 4, kind: 'sticker',
+      glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof' },
   ];
 
   const [hover, setHover] = React.useState(null);
