@@ -22,7 +22,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
     { sku: 'NP-001', name: '20nup_pin',       price: 6,  stock: 'in stock', x: 42, y: 72, w: 90,  r: -8,  z: 6, kind: 'pin',
       glyph: '20', dims: '1.25" enamel', material: 'soft enamel, rubber clutch' },
     { sku: 'SI-001', name: 'stroked_image',   price: 5,  stock: 'in stock', x: 28, y: 40, w: 130, r: 8,   z: 4, kind: 'sticker',
-      glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof' },
+      glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
   ];
 
   const [hover, setHover] = React.useState(null);
@@ -105,7 +105,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
               background: 'rgba(255,255,255,0.12)', border: `1px dashed ${faint}`,
               transform: 'translateX(-50%) rotate(-4deg)', zIndex: 2,
             }} />
-            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} />
+            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} />
             <div style={{
               position: 'absolute', top: -14, right: -18, transform: `rotate(${-it.r + 6}deg)`,
               background: green, color: '#000', padding: '4px 8px 4px 14px',
@@ -228,11 +228,17 @@ function Row({ k, v, vColor, green, dim }) {
   );
 }
 
-function ItemPlaceholder({ kind, glyph, accent }) {
+function ItemPlaceholder({ kind, glyph, accent, image }) {
   const g = accent;
   const dropShadow = `drop-shadow(3px 4px 0 rgba(0,0,0,.6)) drop-shadow(0 0 8px rgba(57,255,20,.25))`;
   const ph = { fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
     letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase' };
+
+  if (image) return (
+    <div style={{ filter: dropShadow, position: 'relative' }}>
+      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt="product" />
+    </div>
+  );
 
   if (kind === 'tee') return (
     <div style={{ filter: dropShadow, position: 'relative' }}>
