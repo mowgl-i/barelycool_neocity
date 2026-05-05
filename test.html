@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://use.typekit.net/jra2wdp.css">
+<style>
+
+body{
+    background-image: url("public/img/boder.jpg");
+	background-position: center;
+	background-repeat: repeat-y;
+    background-size: clamp(200vw,150vw,100vw);
+    font-family: "gridlite-pe-variable", sans-serif;
+    font-variation-settings: 'wght' 900, 'BACK' 200, 'RECT' 200, 'ELSH' 4;
+}
+.row{
+display: flex;
+flex-wrap: wrap;
+flex-direction: column;
+align-items:center;
+justify-content: center;
+}
+
+.flex-container-main-row {
+  display: flex;
+  flex-wrap: wrap;
+  /* background-color: rgb(6, 82, 158); */
+  flex-direction: row;
+  /* align-items:center; */
+  justify-content: center;
+  /* width: clamp(30vw,50vw,80vw); */
+}
+
+.flex-container-info {
+  display: flex;
+  flex-wrap: wrap;
+  /* background-color: rgb(107, 121, 134); */
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.flex-container-products {
+  display: flex;
+  flex-wrap: wrap;
+  /* background-color: DodgerBlue; */
+  flex-direction: column;
+  align-items: center;
+}
+
+.flex-container-products > div {
+  background-color: #ffffff;
+  width: clamp(5vw,30vw,60vw);
+  margin: 10px;
+  text-align: center;
+  line-height: 75px;
+  font-size: 30px;
+}
+
+.flex-container-products > img {
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-container-info > div {
+  /* background-color: #cc0707; */
+  width: clamp(10vw,29vw,70vw);
+  margin: 10px;
+  text-align: center;
+  line-height: 75px;
+  font-size: 30px;
+}
+.flex-container-main-row > div {
+    width: clamp(10vw,33vw,70vw);
+}
+/*Scroll Box*/
+.scrolling-box {
+	font-size: .5vw;
+    background-color: rgb(255, 255, 255);
+    display: block;
+    max-width: 100%;
+    height: 15em;
+    padding: .5em;
+    overflow-y: scroll;
+    text-align: center;
+    margin-bottom: 1em;
+    scrollbar-color: #bac1bd #02491c;
+    scrollbar-width: thin;
+}
+section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+.negcirclefont{
+  font-family: "gridlite-pe-variable",sans-serif;
+  font-variation-settings: 'wght' 1, 'BACK' 700, 'RECT' 700, 'ELSH' 4;
+}
+</style>
+</head>
+<body>
+    <div class="row">
+        <div class="flex-container-main-row" style="padding: 2%;">
+            <div><img src="public/img/header.jpg" alt="@" style="  max-width: 100%;">
+            </div>
+        </div>
+    </div>
+<div class="row" style="flex-direction: row-reverse;">
+    <div class="flex-container-main-row">
+        <div class="flex-container-info">
+            <p class="negcirclefont">News & Updates</p>
+            <div class="scrolling-box">
+                <section id="1"><p>02/07/2024 ★ <br>At first i lost hope with this html stuff.. but i understand it now.. Ben Davis 1/2 zips made it out to a few friends. I wasn't too statified with the shirt board I was using but I ordered a few more. I'll be ready to start taking orders by end of february. By that time, work shirt #2 will be ready to tease...</p></section>
+                
+            </div>
+        </div>
+
+        <div class="flex-container-products">
+            <div>
+                <img src="public/img/drop1.png" alt="@" style="width: 100%; margin-top: 5%;">
+            </div>
+        </div>
+    </div>
+</div>
+<footer>
+    <div class="flex-container-main-row" style="padding: 2%;">
+        <div style="justify-content: center; align-items: center;">
+            <p style="text-align: center;">
+                <strong>For any questions: hmu at mowgli@barely.cool <br>
+                    if you email me dumb stuff.. <br>
+                    you will get your head blown off... </strong>
+            </p>
+            <p style="text-align: center;">
+                ©2025 20nup by BarelyCool LLC. All Rights Reserved. Hosted by Neocities.
+            </p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
