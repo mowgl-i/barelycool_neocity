@@ -64,13 +64,13 @@
   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     "accent": "#30ff14",
     "scanlines": true,
-    "mascot": true,
     "phosphor": true
   }/*EDITMODE-END*/;
 
   function Page() {
     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
     const accent = t.accent;
+    const isMobile = useIsMobile();
 
     const accentRgb = (() => {
       const h = accent.replace('#', '');
@@ -160,14 +160,15 @@
 
     return (
       <div style={{
-        maxWidth: 1100, margin: '0 auto', padding: '20px 18px 220px',
+        maxWidth: 1100, margin: '0 auto',
+        padding: isMobile ? '12px 10px 340px' : '20px 18px 220px',
         position: 'relative',
       }}>
         {/* CRT title bar */}
         <div style={{
           background: '#06080a', border: `1px solid ${rgba(0.22)}`,
           padding: '6px 14px', display: 'flex', justifyContent: 'space-between',
-          fontSize: 11, color: rgba(0.5),
+          flexWrap: 'wrap', gap: 4, fontSize: 11, color: rgba(0.5),
         }}>
           <span>barely.cool ▸ /home/mowgli ▸ tty1</span>
           <span>SESS 04219081 ▸ {new Date().toLocaleDateString('en-US')} ▸ uptime 19h ▸ cart [{cart.length}]</span>
@@ -180,7 +181,7 @@
           textAlign: 'center',
         }}>
           <pre style={{
-            margin: 0, fontSize: 13, color: accent, lineHeight: 1.0,
+            margin: 0, fontSize: isMobile ? 8 : 13, color: accent, lineHeight: 1.0,
             textShadow: t.phosphor ? `0 0 6px ${accent}` : 'none',
             display: 'inline-block', textAlign: 'left',
           }}>
@@ -194,141 +195,82 @@
           </div>
         </div>
 
-        {/* nav */}
+        {/* visitor strip */}
         <div style={{
-          display: 'flex', padding: '0', borderTop: `1px solid ${rgba(0.22)}`,
-          fontSize: 12,
-        }}>
-          {['log', 'shop', 'car', 'links', 'about'].map((c, i) => (
-            <a key={c} href={'#' + c} style={{
-              padding: '8px 16px', borderRight: `1px solid ${rgba(0.22)}`,
-              color: i === 0 ? '#000' : accent,
-              background: i === 0 ? accent : 'transparent',
-              textDecoration: 'none', fontWeight: 700,
-              textShadow: i === 0 || !t.phosphor ? 'none' : `0 0 4px ${accent}`,
-            }}>
-              <span style={{ color: i === 0 ? '#000' : rgba(0.5) }}>./</span>{c}
-            </a>
-          ))}
-          <div style={{ flex: 1, borderRight: `1px solid ${rgba(0.22)}`, padding: '8px 12px',
-            color: rgba(0.5), fontSize: 11, textAlign: 'right',
-          }}>uid=mowgli ▸ visitors:<span id="nav-counter">040219081</span></div>
-        </div>
+          borderTop: `1px solid ${rgba(0.22)}`, padding: '8px 12px',
+          color: rgba(0.5), fontSize: 11, textAlign: 'right',
+        }}>uid=mowgli ▸ visitors:<span id="fc2-counter"><Fc2Counter id="40219080" /></span></div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px',
-          border: `1px solid ${rgba(0.22)}`, borderTop: 'none',
-        }}>
-          {/* MAIN */}
-          <div style={{ padding: '18px', borderRight: `1px solid ${rgba(0.22)}` }}>
-            {/* build log */}
-            <div id="log" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 10 }}>
-              ─[ /var/log/build.txt ]──────────────────────────────────────
-            </div>
-
-            {[
-              { d: '2026-04-29', h: 'oil_pan_4_cracked.txt', sz: '2.1k',
-                body: '> lowered her another 3/4". hit a manhole cover @ 12mph.\n> oil pan #4 dead. there is a metaphor here.\n> patch on the press by friday. ETA pan #5: tuesday. ETA regret: now.' },
-              { d: '2026-04-14', h: 'spring_batch_shipped.txt', sz: '0.8k',
-                body: '> all preorders for work shirt #2 shipped mon.\n> 7 tees + 3 stickers + 1 stray patch left from this run.\n> if yours hasn\'t shown by next week ping me.' },
-              { d: '2026-03-14', h: 'in_house_press.txt', sz: '1.4k',
-                body: '> outsourcing patches @ $10/ea was a tax. machine arrived tues.\n> first run cleared in 6 days. savings get passed on. that\'s the point. :>' },
-              { d: '2024-03-14', h: 'better_late_than_never.txt', sz: '0.5k',
-                body: '> one bottle neck to drop #1: needed to outsource the patch work ($10/ea.. wtf).\n> now i have my own machine. passing the savings on to you. :>' },
-              { d: '2024-02-07', h: 'found_my_footing.txt', sz: '0.4k',
-                body: '> at first i lost hope with this html stuff.. but i understand it now.\n> ben davis 1/2 zips made it to a few friends. ordering more shirt boards.\n> ready to start taking orders by end of feb. work shirt #2 in the teaser queue.' },
-            ].map((p, i) => (
-              <div key={i} style={{ marginBottom: 14, paddingBottom: 10,
-                borderBottom: `1px dashed ${rgba(0.22)}` }}>
-                <div style={{ display: 'flex', gap: 10, fontSize: 11, color: rgba(0.5),
-                  flexWrap: 'wrap' }}>
-                  <span>{p.d}</span>
-                  <span style={{ color: accent, fontWeight: 700,
-                    textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none' }}>▸ {p.h}</span>
-                  <span>{p.sz}</span>
-                </div>
-                <pre style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap',
-                  fontFamily: 'inherit', fontSize: 13, color: accent, lineHeight: 1.5,
-                  textShadow: t.phosphor ? `0 0 3px ${accent}` : 'none' }}>{p.body}</pre>
-              </div>
-            ))}
-
-            {/* SHOP — flatlay */}
-            <div id="shop" style={{ fontSize: 11, color: rgba(0.5), margin: '24px 0 10px' }}>
-              ─[ /opt/shop/flatlay.png ]────────── render: 3 items ──────
-            </div>
-
-            <FlatlayShop accent={accent} />
-
-            <div style={{ marginTop: 10, fontSize: 11, color: rgba(0.5),
-              display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <span>3 items ▸ 0 sold out ▸ 0 preorder ▸ ship usps fri</span>
-              <span>// chaos.layout v0.4 ▸ powered by tape</span>
-            </div>
+        <div style={{ padding: isMobile ? '14px 12px' : '18px',
+          border: `1px solid ${rgba(0.22)}`, borderTop: 'none' }}>
+          {/* SHOP — flatlay */}
+          <div id="shop" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 10 }}>
+            ─[ /opt/shop/flatlay.png ]────────── render: 3 items ──────
           </div>
 
-          {/* SIDEBAR */}
-          <aside style={{ padding: '16px 14px', fontSize: 12 }}>
-            <div id="car" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 6 }}>─[ ~/the_car ]─────────</div>
-            <pre style={{
-              margin: 0, padding: 10, border: `1px solid ${rgba(0.22)}`, background: '#06080a',
-              color: accent, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
-              whiteSpace: 'pre-wrap',
-              textShadow: t.phosphor ? `0 0 3px ${accent}` : 'none',
-            }}>
-{`year     │ 1987
-chassis  │ MX73 wgn
-engine   │ 7M, na, tired
-sus      │ static, -4.5"
-front    │ 15x9  -25
-rear     │ 15x10 -32
-fender   │ +12mm pull
-welds    │ driveway grade
-status   │ rolling on faith`}
-            </pre>
+          <FlatlayShop accent={accent} />
 
-            <div id="about" style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/contact ]─────────</div>
-            <div style={{
-              padding: 10, border: `1px solid ${rgba(0.22)}`, background: '#06080a',
-            }}>
-              <div style={{ fontSize: 11, color: rgba(0.5) }}>$ cat email.txt</div>
-              <a href="mailto:mowgli@barely.cool" style={{
-                display: 'block', fontSize: 14, color: '#fff', margin: '4px 0', fontWeight: 700,
-                textDecoration: 'none',
-                textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none',
-              }}>mowgli@barely.cool</a>
-              <div style={{ fontSize: 11, color: rgba(0.5), marginTop: 6, lineHeight: 1.5 }}>
-                # WARNING<br/>
-                # if you email me dumb stuff<br/>
-                # you will get your head blown off<br/>
-                # this is not a joke
+          <div style={{ marginTop: 10, fontSize: 11, color: rgba(0.5),
+            display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <span>3 items ▸ 0 sold out ▸ 0 preorder ▸ ship usps fri</span>
+            <span>// chaos.layout v0.4 ▸ powered by tape</span>
+          </div>
+
+          {/* build log */}
+          <div id="log" style={{ fontSize: 11, color: rgba(0.5), margin: '24px 0 10px' }}>
+            ─[ /var/log/build.txt ]──────────────────────────────────────
+          </div>
+
+          {[
+            { d: '2026-05-04', h: 'h3ll0w0rl6.txt', sz: '0.7k',
+              body: '> giving the site a new look to motivate myself and the internet to go build cool shit.. hope i can stick with it.' },
+            { d: '2024-03-14', h: 'better_late_than_never.txt', sz: '0.5k',
+              body: '> one bottle neck to drop #1: needed to outsource the patch work ($10/ea.. wtf).\n> now i have my own machine. passing the savings on to you. :>' },
+            { d: '2024-02-07', h: 'found_my_footing.txt', sz: '0.4k',
+              body: '> at first i lost hope with this html stuff.. but i understand it now.\n> ben davis 1/2 zips made it to a few friends. ordering more shirt boards.\n> ready to start taking orders by end of feb. work shirt #2 in the teaser queue.' },
+          ].map((p, i) => (
+            <div key={i} style={{ marginBottom: 14, paddingBottom: 10,
+              borderBottom: `1px dashed ${rgba(0.22)}` }}>
+              <div style={{ display: 'flex', gap: 10, fontSize: 11, color: rgba(0.5),
+                flexWrap: 'wrap' }}>
+                <span>{p.d}</span>
+                <span style={{ color: accent, fontWeight: 700,
+                  textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none' }}>▸ {p.h}</span>
+                <span>{p.sz}</span>
               </div>
-              <pre style={{ margin: '6px 0 0', fontSize: 12, color: '#ff5544', lineHeight: 1 }}>
+              <pre style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap',
+                fontFamily: 'inherit', fontSize: 13, color: accent, lineHeight: 1.5,
+                textShadow: t.phosphor ? `0 0 3px ${accent}` : 'none' }}>{p.body}</pre>
+            </div>
+          ))}
+
+          {/* CONTACT */}
+          <div id="about" style={{ fontSize: 11, color: rgba(0.5), margin: '24px 0 10px' }}>
+            ─[ ~/contact ]───────────────────────────────────────────────
+          </div>
+          <div style={{
+            padding: 10, border: `1px solid ${rgba(0.22)}`, background: '#06080a',
+            maxWidth: 360,
+          }}>
+            <div style={{ fontSize: 11, color: rgba(0.5) }}>$ cat email.txt</div>
+            <a href="mailto:mowgli@barely.cool" style={{
+              display: 'block', fontSize: 14, color: '#fff', margin: '4px 0', fontWeight: 700,
+              textDecoration: 'none',
+              textShadow: t.phosphor ? `0 0 4px ${accent}` : 'none',
+            }}>mowgli@barely.cool</a>
+            <div style={{ fontSize: 11, color: rgba(0.5), marginTop: 6, lineHeight: 1.5 }}>
+              # WARNING<br/>
+              # if you email me dumb stuff<br/>
+              # you will get your head blown off<br/>
+              # this is not a joke
+            </div>
+            <pre style={{ margin: '6px 0 0', fontSize: 12, color: '#ff5544', lineHeight: 1 }}>
 {`   ___
   /(__\\
  ( _-_ )
   \\___/ -==o)`}
-              </pre>
-            </div>
-
-            <div id="links" style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/bookmarks ]──────</div>
-            <div style={{ fontSize: 12, lineHeight: 1.7 }}>
-              <div>→ slammedsociety</div>
-              <div>→ hagerty-but-not</div>
-              <div>→ tuesday-meet</div>
-              <div>→ fenderroller-coop</div>
-              <div style={{ color: rgba(0.5) }}>→ your_site_here.html</div>
-            </div>
-
-            <div style={{ fontSize: 11, color: rgba(0.5), margin: '14px 0 6px' }}>─[ ~/uptime ]─────────</div>
-            <div style={{
-              padding: '8px 10px', border: `1px solid ${rgba(0.22)}`, background: '#06080a',
-              fontSize: 18, letterSpacing: 4, textAlign: 'center',
-              color: accent, textShadow: t.phosphor ? `0 0 6px ${accent}` : 'none',
-            }}>
-              <Fc2Counter id="40219080" />
-            </div>
-            <div style={{ fontSize: 10, color: rgba(0.5), textAlign: 'center', marginTop: 4 }}>visitors since 2024</div>
-          </aside>
+            </pre>
+          </div>
         </div>
 
         {/* footer status bar */}
@@ -338,7 +280,7 @@ status   │ rolling on faith`}
           flexWrap: 'wrap', gap: 8,
         }}>
           <span>NORMAL ▸ /home/mowgli ▸ utf-8 ▸ unix</span>
-          <span>©2026 20nup by BarelyCool LLC ▸ neocities ▸ no js no cookies no shame</span>
+          <span>©2026 20nup by BarelyCool LLC</span>
           <span>Ln 04 ▸ Col 29 ▸ 100%</span>
         </div>
 
@@ -346,9 +288,8 @@ status   │ rolling on faith`}
         <CartTerminal
           accent={accent} rgba={rgba} cart={cart} cmdLog={cmdLog} typing={typing}
           input={input} setInput={setInput} runCmd={runCmd} phosphor={t.phosphor}
+          isMobile={isMobile}
         />
-
-        {t.mascot && <Mascot accent={accent} />}
 
         {t.scanlines && (
           <div style={{
@@ -366,14 +307,12 @@ status   │ rolling on faith`}
           <TweakColor  label="Accent" value={t.accent} onChange={(v) => setTweak('accent', v)} />
           <TweakToggle label="CRT scanlines" value={t.scanlines} onChange={(v) => setTweak('scanlines', v)} />
           <TweakToggle label="Phosphor glow" value={t.phosphor} onChange={(v) => setTweak('phosphor', v)} />
-          <TweakSection label="Chrome" />
-          <TweakToggle label="Mascot" value={t.mascot} onChange={(v) => setTweak('mascot', v)} />
         </TweaksPanel>
       </div>
     );
   }
 
-  function CartTerminal({ accent, rgba, cart, cmdLog, typing, input, setInput, runCmd, phosphor }) {
+  function CartTerminal({ accent, rgba, cart, cmdLog, typing, input, setInput, runCmd, phosphor, isMobile }) {
     const total = cart.reduce((s, x) => s + x.price, 0);
     const inputRef = React.useRef(null);
     const logRef = React.useRef(null);
@@ -388,12 +327,15 @@ status   │ rolling on faith`}
         boxShadow: phosphor ? `0 -4px 20px ${rgba(0.25)}` : 'none',
         fontFamily: 'inherit', color: accent,
       }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '8px 18px',
-          display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'stretch' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto',
+          padding: isMobile ? '8px 12px' : '8px 18px',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 280px',
+          gap: isMobile ? 8 : 16, alignItems: 'stretch' }}>
           <div onClick={() => inputRef.current && inputRef.current.focus()}
             style={{ cursor: 'text' }}>
             <div ref={logRef} style={{
-              maxHeight: 110, overflowY: 'auto', fontSize: 12, lineHeight: 1.5,
+              maxHeight: isMobile ? 72 : 110, overflowY: 'auto', fontSize: 12, lineHeight: 1.5,
               marginBottom: 4, paddingRight: 8,
             }}>
               {cmdLog.map((l, i) => (
@@ -426,7 +368,11 @@ status   │ rolling on faith`}
             </div>
           </div>
 
-          <div style={{ borderLeft: `1px solid ${rgba(0.22)}`, paddingLeft: 16, fontSize: 11 }}>
+          <div style={{
+            borderLeft: isMobile ? 'none' : `1px solid ${rgba(0.22)}`,
+            borderTop: isMobile ? `1px solid ${rgba(0.22)}` : 'none',
+            paddingLeft: isMobile ? 0 : 16, paddingTop: isMobile ? 8 : 0,
+            fontSize: 11 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between',
               color: rgba(0.55), marginBottom: 4, letterSpacing: 1 }}>
               <span>// cart.json</span>
@@ -465,34 +411,6 @@ status   │ rolling on faith`}
           </div>
         </div>
         <style>{`@keyframes blink{50%{opacity:0}}`}</style>
-      </div>
-    );
-  }
-
-  function Mascot({ accent }) {
-    const [winked, setWinked] = React.useState(false);
-    return (
-      <div style={{
-        position: 'fixed', right: 14, bottom: 160, zIndex: 90,
-        cursor: 'pointer',
-      }} onClick={() => setWinked((w) => !w)} title="click me">
-        <div style={{
-          padding: '6px 6px 4px', background: '#06080a', border: `1px solid ${accent}`,
-          boxShadow: `0 0 12px ${accent}`,
-          fontFamily: 'ui-monospace, monospace',
-        }}>
-          <div style={{ fontSize: 9, color: 'rgba(57,255,20,0.55)',
-            letterSpacing: 1, marginBottom: 4, textAlign: 'center' }}>[ mascot.gif ]</div>
-          <div style={{
-            width: 72, height: 72, background: '#02040a',
-            border: `1px dashed rgba(57,255,20,0.35)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, color: accent, lineHeight: 1,
-            textShadow: `0 0 6px ${accent}`,
-          }}>{winked ? '(=^- ^=)' : '(=^o.o^=)'}</div>
-          <div style={{ fontSize: 9, color: accent, marginTop: 4, textAlign: 'center',
-            letterSpacing: 1 }}>BARELYCAT</div>
-        </div>
       </div>
     );
   }

@@ -1,6 +1,24 @@
 // Flatlay shop — overlapping scattered items.
 // Hover: lifts the item + reveals the price tag.
 // Click: opens a detail card pinned near the item with sku, dims/sizes, add-to-cart.
+// On mobile (<= 640px) the scatter collapses into a clean vertical stacked list.
+
+// Shared viewport hook — used by both the shop and the page shell.
+function useIsMobile(maxWidth = 640) {
+  const query = `(max-width:${maxWidth}px)`;
+  const [isMobile, setIsMobile] = React.useState(
+    typeof window !== 'undefined' && window.matchMedia(query).matches
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', on);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return isMobile;
+}
+window.useIsMobile = useIsMobile;
 
 function FlatlayShop({ accent = '#39ff14' }) {
   const green = accent;
@@ -17,6 +35,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
       glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
   ];
 
+  const isMobile = useIsMobile();
   const [hover, setHover] = React.useState(null);
   const [open, setOpen] = React.useState(null);  // sku
   const [pop, setPop] = React.useState(null);
@@ -68,6 +87,85 @@ function FlatlayShop({ accent = '#39ff14' }) {
     setOpen(null);
   };
 
+  // ── Mobile: clean vertical stacked list ──────────────────────────────
+  if (isMobile) {
+    return (
+      <div ref={flatLayRef} style={{
+        width: '100%', border: `1px solid ${faint}`, background: '#06080a',
+        padding: 12, display: 'flex', flexDirection: 'column', gap: 12,
+        fontFamily: 'ui-monospace, monospace',
+      }}>
+        <div style={{ fontSize: 10, color: dim, letterSpacing: 2 }}>
+          FLATLAY ▸ SS26 ▸ {items.length} ITEMS ▸ tap to add
+        </div>
+        {items.map((it) => {
+          const sold = it.stock === 'sold out';
+          const needsSize = it.sizes && !size[it.sku];
+          const disabled = sold || needsSize;
+          return (
+            <div key={it.sku} style={{
+              border: `1px solid ${faint}`, background: '#0e1410',
+              padding: 12, display: 'flex', gap: 12, alignItems: 'flex-start',
+            }}>
+              <div style={{ width: 88, flexShrink: 0 }}>
+                <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>
+                    {it.name.replace(/_/g, ' ')}
+                  </span>
+                  <span style={{ color: green, fontWeight: 900, fontSize: 14,
+                    textShadow: `0 0 4px ${green}` }}>${it.price}</span>
+                </div>
+                <div style={{ color: dim, fontSize: 11, margin: '3px 0 8px' }}>
+                  {it.sku} ▸ <span style={{ color: sold ? '#ff5544' : green }}>{it.stock}</span>
+                  {it.dims ? ` ▸ ${it.dims}` : ''}
+                </div>
+                {it.sizes && (
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+                    {it.sizes.map((s) => {
+                      const on = size[it.sku] === s;
+                      return (
+                        <button key={s} onClick={(e) => { e.stopPropagation(); setSize((m) => ({ ...m, [it.sku]: s })); }}
+                          style={{
+                            padding: '5px 10px', minWidth: 32,
+                            background: on ? green : 'transparent',
+                            color: on ? '#000' : green,
+                            border: `1px solid ${on ? green : faint}`,
+                            fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          }}>{s}</button>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={(e) => add(it, e)} disabled={disabled} style={{
+                  width: '100%', padding: '9px', fontFamily: 'inherit',
+                  fontWeight: 900, fontSize: 12, letterSpacing: 1,
+                  background: disabled ? 'transparent' : green,
+                  color: disabled ? dim : '#000',
+                  border: `1px solid ${disabled ? faint : green}`,
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                }}>
+                  {sold ? 'SOLD OUT' : needsSize ? 'PICK A SIZE FIRST' : '$ add to cart'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {pop && (
+          <div key={pop.key} style={{
+            position: 'fixed', left: pop.x, top: pop.y, zIndex: 9999, pointerEvents: 'none',
+            color: green, fontWeight: 900, fontSize: 18,
+            textShadow: `0 0 6px ${green}`, animation: 'popUp .7s ease-out forwards',
+          }}>+1</div>
+        )}
+        <style>{`@keyframes popUp{0%{transform:translate(-50%,-10px);opacity:1}100%{transform:translate(-50%,-60px);opacity:0}}`}</style>
+      </div>
+    );
+  }
+
   return (
     <div ref={flatLayRef} style={{
       position: 'relative', width: '100%', minHeight: 760,
@@ -115,10 +213,15 @@ function FlatlayShop({ accent = '#39ff14' }) {
               zIndex: isOpen ? 60 : isHover ? 50 : it.z, cursor: 'pointer',
             }}>
             <div style={{
-              position: 'absolute', top: -10, left: '50%', width: 60, height: 16,
-              background: 'rgba(255,255,255,0.12)', border: `1px dashed ${faint}`,
-              transform: 'translateX(-50%) rotate(-4deg)', zIndex: 2,
-            }} />
+              position: 'absolute', top: -32, left: '50%',
+              transform: 'translateX(-50%)', zIndex: 2,
+              fontSize: 16, fontWeight: 700, color: green,
+              fontFamily: 'ui-monospace, monospace',
+              textShadow: `0 0 8px ${green}, 0 0 16px ${green}55`,
+              whiteSpace: 'nowrap', pointerEvents: 'none',
+            }}>
+              {it.name.replace(/_/g, ' ')}
+            </div>
             <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} />
             <div style={{
               position: 'absolute', top: -14, right: -18, transform: `rotate(${-it.r + 6}deg)`,
