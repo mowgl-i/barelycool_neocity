@@ -59,6 +59,7 @@
 
 <script type="text/babel" src="js/tweaks-panel.js"></script>
 <script type="text/babel" src="js/shopify.js"></script>
+<script type="text/babel" src="js/gate.js"></script>
 <script type="text/babel" src="js/flatlay-shop.js"></script>
 
 <script type="text/babel" data-presets="react">
@@ -447,7 +448,13 @@
     return <span ref={ref} />;
   }
 
-  ReactDOM.createRoot(document.getElementById('root')).render(<Page />);
+  function Root() {
+    const [unlocked, setUnlocked] = React.useState(isUnlocked);
+    if (!unlocked) return <Gate onUnlock={() => setUnlocked(true)} />;
+    return <Page />;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
 </script>
 
 </body>
