@@ -20,20 +20,24 @@ function useIsMobile(maxWidth = 640) {
 }
 window.useIsMobile = useIsMobile;
 
-function FlatlayShop({ accent = '#39ff14' }) {
+// Fallback catalog used when the Storefront API is unreachable, so the flatlay
+// never renders empty. Page reads this via window.FALLBACK_ITEMS too.
+const FALLBACK_ITEMS = [
+  { sku: 'WS-002', name: 'work_shirt_no2',  price: 45, stock: '7 left',   x: 4,  y: 22, w: 240, r: -6,  z: 3, kind: 'tee',
+    glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
+  { sku: 'RT-001', name: 'rust_tee',        price: 35, stock: '12 left',  x: 6,  y: 60, w: 230, r: 10,  z: 3, kind: 'tee',
+    glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
+  { sku: 'SI-001', name: 'clanker_sticker',  price: 5,  stock: 'in stock', x: 28, y: 40, w: 390, r: 8,   z: 4, kind: 'sticker',
+    glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
+];
+window.FALLBACK_ITEMS = FALLBACK_ITEMS;
+
+function FlatlayShop({ accent = '#39ff14', items = FALLBACK_ITEMS, loading = false, error = null }) {
   const green = accent;
   const dim = 'rgba(57,255,20,0.5)';
   const faint = 'rgba(57,255,20,0.22)';
-
-  // 3 items. tees carry sizes; flat goods carry dims.
-  const items = [
-    { sku: 'WS-002', name: 'work_shirt_no2',  price: 45, stock: '7 left',   x: 4,  y: 22, w: 240, r: -6,  z: 3, kind: 'tee',
-      glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
-    { sku: 'RT-001', name: 'rust_tee',        price: 35, stock: '12 left',  x: 6,  y: 60, w: 230, r: 10,  z: 3, kind: 'tee',
-      glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
-    { sku: 'SI-001', name: 'clanker_sticker',  price: 5,  stock: 'in stock', x: 28, y: 40, w: 390, r: 8,   z: 4, kind: 'sticker',
-      glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
-  ];
+  const shopLoading = loading;
+  const shopError = error;
 
   const isMobile = useIsMobile();
   const [hover, setHover] = React.useState(null);
@@ -108,7 +112,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
               padding: 12, display: 'flex', gap: 12, alignItems: 'flex-start',
             }}>
               <div style={{ width: 88, flexShrink: 0 }}>
-                <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} />
+                <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} name={it.name} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between',
@@ -190,7 +194,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
       <div style={{
         position: 'absolute', top: 10, left: 14, fontSize: 10, color: dim,
         fontFamily: 'ui-monospace, monospace', letterSpacing: 2,
-      }}>FLATLAY ▸ SS26 ▸ 6 ITEMS</div>
+      }}>FLATLAY ▸ SS26 ▸ {items.length} ITEMS{shopLoading ? ' ▸ syncing…' : shopError ? ' ▸ offline' : ''}</div>
       <div style={{
         position: 'absolute', top: 10, right: 14, fontSize: 10, color: dim,
         fontFamily: 'ui-monospace, monospace', letterSpacing: 2,
@@ -222,7 +226,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
             }}>
               {it.name.replace(/_/g, ' ')}
             </div>
-            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} />
+            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} name={it.name} />
             <div style={{
               position: 'absolute', top: -14, right: -18, transform: `rotate(${-it.r + 6}deg)`,
               background: green, color: '#000', padding: '4px 8px 4px 14px',
@@ -345,17 +349,18 @@ function Row({ k, v, vColor, green, dim }) {
   );
 }
 
-function ItemPlaceholder({ kind, glyph, accent, image }) {
+function ItemPlaceholder({ kind, glyph, accent, image, name }) {
   const g = accent;
   const dropShadow = `drop-shadow(3px 4px 0 rgba(0,0,0,.6)) drop-shadow(0 0 8px rgba(57,255,20,.25))`;
   const ph = { fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
     letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase' };
+  const label = (name || '').replace(/_/g, ' ');
 
   if (image) return (
     <div style={{ filter: dropShadow, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
-        letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase', marginBottom: 6 }}>Clanker sticker</div>
-      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt="Clanker sticker" />
+        letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>
+      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt={label} />
     </div>
   );
 

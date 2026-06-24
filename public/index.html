@@ -58,6 +58,7 @@
 <div id="root"></div>
 
 <script type="text/babel" src="js/tweaks-panel.js"></script>
+<script type="text/babel" src="js/shopify.js"></script>
 <script type="text/babel" src="js/flatlay-shop.js"></script>
 
 <script type="text/babel" data-presets="react">
@@ -71,6 +72,11 @@
     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
     const accent = t.accent;
     const isMobile = useIsMobile();
+
+    // Live products from Shopify (falls back to the local catalog if offline).
+    const shop = useShopifyProducts();
+    const items = (shop.items && shop.items.length) ? shop.items : window.FALLBACK_ITEMS;
+    const soldOut = items.filter((it) => it.stock === 'sold out').length;
 
     const accentRgb = (() => {
       const h = accent.replace('#', '');
@@ -142,8 +148,23 @@
         if (cart.length === 0) {
           out.push({ kind: 'err', text: '▸ cart is empty' });
         } else {
-          out.push({ kind: 'ok', text: '▸ redirecting to checkout...' });
-          setTimeout(() => { window.location.href = 'mailto:mowgli@barely.cool?subject=Order'; }, 800);
+          // Build a Shopify cart permalink (/cart/{variantId}:{qty},...) so the
+          // buyer lands in real hosted checkout. Fall back to email if any item
+          // has no variant id (e.g. the offline fallback catalog).
+          const qtyByVariant = {};
+          cart.forEach((it) => {
+            const vid = (it.size && it.variantBySize) ? it.variantBySize[it.size] : it.variantId;
+            if (vid) qtyByVariant[vid] = (qtyByVariant[vid] || 0) + 1;
+          });
+          const path = Object.entries(qtyByVariant).map(([id, q]) => `${id}:${q}`).join(',');
+          if (path && cart.every((it) => (it.size && it.variantBySize) ? it.variantBySize[it.size] : it.variantId)) {
+            out.push({ kind: 'ok', text: '▸ redirecting to checkout...' });
+            const domain = (window.SHOPIFY_CONFIG && window.SHOPIFY_CONFIG.domain) || '';
+            setTimeout(() => { window.location.href = `https://${domain}/cart/${path}`; }, 800);
+          } else {
+            out.push({ kind: 'ok', text: '▸ no online checkout — opening email...' });
+            setTimeout(() => { window.location.href = 'mailto:mowgli@barely.cool?subject=Order'; }, 800);
+          }
         }
       } else if (cmd === 'ls') {
         out.push({ kind: 'sys', text: '▸ scroll up — flatlay above. click to inspect.' });
@@ -205,14 +226,14 @@
           border: `1px solid ${rgba(0.22)}`, borderTop: 'none' }}>
           {/* SHOP — flatlay */}
           <div id="shop" style={{ fontSize: 11, color: rgba(0.5), marginBottom: 10 }}>
-            ─[ /opt/shop/flatlay.png ]────────── render: 3 items ──────
+            ─[ /opt/shop/flatlay.png ]────────── render: {items.length} item{items.length === 1 ? '' : 's'} ──────
           </div>
 
-          <FlatlayShop accent={accent} />
+          <FlatlayShop accent={accent} items={items} loading={shop.loading} error={shop.error} />
 
           <div style={{ marginTop: 10, fontSize: 11, color: rgba(0.5),
             display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <span>3 items ▸ 0 sold out ▸ 0 preorder ▸ ship usps fri</span>
+            <span>{items.length} item{items.length === 1 ? '' : 's'} ▸ {soldOut} sold out ▸ 0 preorder ▸ ship usps fri</span>
             <span>// chaos.layout v0.4 ▸ powered by tape</span>
           </div>
 
