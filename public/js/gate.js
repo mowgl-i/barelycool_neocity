@@ -9,10 +9,50 @@
 const ACCESS_CODE = '2024';
 const UNLOCK_KEY = 'bc-unlocked';
 
+// The "under construction" block banner, same ANSI-shadow style as the site
+// header — kept verbatim so the gate looks like the original splash page.
+const CONSTRUCTION_BANNER =
+` ██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗
+ ██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗
+ ██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝
+ ██║   ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗
+ ╚██████╔╝██║ ╚████║██████╔╝███████╗██║  ██║
+  ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+
+ ██████╗ ██████╗ ███╗   ██╗███████╗████████╗
+██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝
+██║     ██║   ██║██╔██╗ ██║███████╗   ██║
+██║     ██║   ██║██║╚██╗██║╚════██║   ██║
+╚██████╗╚██████╔╝██║ ╚████║███████║   ██║
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝
+
+██████╗ ██╗   ██╗██╗██╗     ██████╗ ██╗███╗   ██╗ ██████╗
+██╔══██╗██║   ██║██║██║     ██╔══██╗██║████╗  ██║██╔════╝
+██████╔╝██║   ██║██║██║     ██║  ██║██║██╔██╗ ██║██║  ███╗
+██╔══██╗██║   ██║██║██║     ██║  ██║██║██║╚██╗██║██║   ██║
+██████╔╝╚██████╔╝██║███████╗██████╔╝██║██║ ╚████║╚██████╔╝
+╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝`;
+
+function useGateIsMobile() {
+  const q = '(max-width:640px)';
+  const [m, setM] = React.useState(
+    typeof window !== 'undefined' && window.matchMedia(q).matches
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia(q);
+    const on = (e) => setM(e.matches);
+    mq.addEventListener('change', on);
+    setM(mq.matches);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return m;
+}
+
 function Gate({ onUnlock }) {
   const green = '#39ff14';
   const dim = 'rgba(57,255,20,0.5)';
   const faint = 'rgba(57,255,20,0.22)';
+  const isMobile = useGateIsMobile();
   const [code, setCode] = React.useState('');
   const [error, setError] = React.useState(false);
 
@@ -66,15 +106,13 @@ function Gate({ onUnlock }) {
       justifyContent: 'center', padding: '24px 18px',
       overflowY: 'auto',
     }}>
-      <div style={{ width: '100%', maxWidth: 340, textAlign: 'center' }}>
+      <div style={{ width: '100%', maxWidth: 360, textAlign: 'center' }}>
         <pre style={{
-          margin: 0, fontSize: 11, color: green, lineHeight: 1.1,
+          margin: '0 auto', fontSize: isMobile ? 5.5 : 9, color: green, lineHeight: 1.05,
           textShadow: `0 0 6px ${green}`, display: 'inline-block', textAlign: 'left',
+          whiteSpace: 'pre', overflow: 'hidden',
         }}>
-{`  ___ ___  _  _ ___ _____ ___ _   _  ___ _____
- / __/ _ \\| \\| / __|_   _| _ \\ | | |/ __|_   _|
-| (_| (_) | .\` \\__ \\ | | |   / |_| | (__  | |
- \\___\\___/|_|\\_|___/ |_| |_|_\\\\___/ \\___| |_|`}
+{CONSTRUCTION_BANNER}
         </pre>
 
         <div style={{ fontSize: 12, color: dim, letterSpacing: 2, margin: '18px 0 6px' }}>
