@@ -1,32 +1,71 @@
 // Flatlay shop — overlapping scattered items.
 // Hover: lifts the item + reveals the price tag.
 // Click: opens a detail card pinned near the item with sku, dims/sizes, add-to-cart.
+// On mobile (<= 640px) the scatter collapses into a clean vertical stacked list.
 
-function FlatlayShop({ accent = '#39ff14' }) {
+// Shared viewport hook — used by both the shop and the page shell.
+function useIsMobile(maxWidth = 640) {
+  const query = `(max-width:${maxWidth}px)`;
+  const [isMobile, setIsMobile] = React.useState(
+    typeof window !== 'undefined' && window.matchMedia(query).matches
+  );
+  React.useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', on);
+    setIsMobile(mq.matches);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return isMobile;
+}
+window.useIsMobile = useIsMobile;
+
+// Fallback catalog used when the Storefront API is unreachable, so the flatlay
+// never renders empty. Page reads this via window.FALLBACK_ITEMS too.
+const FALLBACK_ITEMS = [
+  { sku: 'WS-002', name: 'work_shirt_no2',  price: 45, stock: '7 left',   x: 4,  y: 22, w: 240, r: -6,  z: 3, kind: 'tee',
+    glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
+  { sku: 'RT-001', name: 'rust_tee',        price: 35, stock: '12 left',  x: 6,  y: 60, w: 230, r: 10,  z: 3, kind: 'tee',
+    glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
+  { sku: 'SI-001', name: 'clanker_sticker',  price: 5,  stock: 'in stock', x: 28, y: 40, w: 390, r: 8,   z: 4, kind: 'sticker',
+    glyph: 'SI', dims: '2" × 3"', material: 'vinyl, weatherproof', image: 'img/stroked-image.png' },
+];
+window.FALLBACK_ITEMS = FALLBACK_ITEMS;
+
+function FlatlayShop({ accent = '#39ff14', items = FALLBACK_ITEMS, loading = false, error = null }) {
   const green = accent;
   const dim = 'rgba(57,255,20,0.5)';
   const faint = 'rgba(57,255,20,0.22)';
+  const shopLoading = loading;
+  const shopError = error;
 
-  // 6 items. tees carry sizes; flat goods carry dims.
-  const items = [
-    { sku: 'WS-002', name: 'work_shirt_no2',  price: 45, stock: '7 left',   x: 4,  y: 22, w: 240, r: -6,  z: 3, kind: 'tee',
-      glyph: 'WS', sizes: ['S','M','L','XL','2XL'], material: 'heavyweight cotton, garment dyed' },
-    { sku: 'DC-001', name: 'drip_czar_patch', price: 12, stock: 'preorder', x: 36, y: 18, w: 140, r: 12,  z: 4, kind: 'patch',
-      glyph: 'DC', dims: '3" × 3"', material: 'iron-on, merrowed edge' },
-    { sku: 'MH-001', name: 'manhole_sticker', price: 4,  stock: 'in stock', x: 76, y: 22, w: 110, r: -18, z: 5, kind: 'sticker',
-      glyph: 'MH', dims: '2.5" round', material: 'vinyl, weatherproof' },
-    { sku: 'CR-087', name: 'cressida_banner', price: 15, stock: 'in stock', x: 60, y: 64, w: 270, r: 5,   z: 2, kind: 'banner',
-      glyph: '87', dims: '17" × 4"', material: 'static cling, rear window' },
-    { sku: 'RT-001', name: 'rust_tee',        price: 35, stock: '12 left',  x: 6,  y: 60, w: 230, r: 10,  z: 3, kind: 'tee',
-      glyph: 'RST', sizes: ['S','M','L','XL'], material: '6oz cotton, heather grey' },
-    { sku: 'NP-001', name: '20nup_pin',       price: 6,  stock: 'in stock', x: 42, y: 72, w: 90,  r: -8,  z: 6, kind: 'pin',
-      glyph: '20', dims: '1.25" enamel', material: 'soft enamel, rubber clutch' },
-  ];
-
+  const isMobile = useIsMobile();
   const [hover, setHover] = React.useState(null);
   const [open, setOpen] = React.useState(null);  // sku
   const [pop, setPop] = React.useState(null);
   const [size, setSize] = React.useState({});    // sku -> selected size
+  const [containerWidth, setContainerWidth] = React.useState(null);
+  const flatLayRef = React.useRef(null);
+
+  // Track flatlay container width for responsive scaling
+  React.useEffect(() => {
+    const container = flatLayRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      setContainerWidth(container.offsetWidth);
+    });
+    observer.observe(container);
+    setContainerWidth(container.offsetWidth);
+    return () => observer.disconnect();
+  }, []);
+
+  // Scale items based on container width (relative to 1100px baseline)
+  const scaleFactor = containerWidth ? containerWidth / 1100 : 1;
+  const scaledItems = items.map(it => ({
+    ...it,
+    w: Math.round(it.w * scaleFactor)
+  }));
 
   // Close detail card on outside click / esc
   React.useEffect(() => {
@@ -52,8 +91,87 @@ function FlatlayShop({ accent = '#39ff14' }) {
     setOpen(null);
   };
 
+  // ── Mobile: clean vertical stacked list ──────────────────────────────
+  if (isMobile) {
+    return (
+      <div ref={flatLayRef} style={{
+        width: '100%', border: `1px solid ${faint}`, background: '#06080a',
+        padding: 12, display: 'flex', flexDirection: 'column', gap: 12,
+        fontFamily: 'ui-monospace, monospace',
+      }}>
+        <div style={{ fontSize: 10, color: dim, letterSpacing: 2 }}>
+          FLATLAY ▸ SS26 ▸ {items.length} ITEMS ▸ tap to add
+        </div>
+        {items.map((it) => {
+          const sold = it.stock === 'sold out';
+          const needsSize = it.sizes && !size[it.sku];
+          const disabled = sold || needsSize;
+          return (
+            <div key={it.sku} style={{
+              border: `1px solid ${faint}`, background: '#0e1410',
+              padding: 12, display: 'flex', gap: 12, alignItems: 'flex-start',
+            }}>
+              <div style={{ width: 88, flexShrink: 0 }}>
+                <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} name={it.name} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>
+                    {it.name.replace(/_/g, ' ')}
+                  </span>
+                  <span style={{ color: green, fontWeight: 900, fontSize: 14,
+                    textShadow: `0 0 4px ${green}` }}>${it.price}</span>
+                </div>
+                <div style={{ color: dim, fontSize: 11, margin: '3px 0 8px' }}>
+                  {it.sku} ▸ <span style={{ color: sold ? '#ff5544' : green }}>{it.stock}</span>
+                  {it.dims ? ` ▸ ${it.dims}` : ''}
+                </div>
+                {it.sizes && (
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+                    {it.sizes.map((s) => {
+                      const on = size[it.sku] === s;
+                      return (
+                        <button key={s} onClick={(e) => { e.stopPropagation(); setSize((m) => ({ ...m, [it.sku]: s })); }}
+                          style={{
+                            padding: '5px 10px', minWidth: 32,
+                            background: on ? green : 'transparent',
+                            color: on ? '#000' : green,
+                            border: `1px solid ${on ? green : faint}`,
+                            fontFamily: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          }}>{s}</button>
+                      );
+                    })}
+                  </div>
+                )}
+                <button onClick={(e) => add(it, e)} disabled={disabled} style={{
+                  width: '100%', padding: '9px', fontFamily: 'inherit',
+                  fontWeight: 900, fontSize: 12, letterSpacing: 1,
+                  background: disabled ? 'transparent' : green,
+                  color: disabled ? dim : '#000',
+                  border: `1px solid ${disabled ? faint : green}`,
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                }}>
+                  {sold ? 'SOLD OUT' : needsSize ? 'PICK A SIZE FIRST' : '$ add to cart'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {pop && (
+          <div key={pop.key} style={{
+            position: 'fixed', left: pop.x, top: pop.y, zIndex: 9999, pointerEvents: 'none',
+            color: green, fontWeight: 900, fontSize: 18,
+            textShadow: `0 0 6px ${green}`, animation: 'popUp .7s ease-out forwards',
+          }}>+1</div>
+        )}
+        <style>{`@keyframes popUp{0%{transform:translate(-50%,-10px);opacity:1}100%{transform:translate(-50%,-60px);opacity:0}}`}</style>
+      </div>
+    );
+  }
+
   return (
-    <div style={{
+    <div ref={flatLayRef} style={{
       position: 'relative', width: '100%', minHeight: 760,
       border: `1px solid ${faint}`, background: '#06080a',
       backgroundImage:
@@ -76,14 +194,14 @@ function FlatlayShop({ accent = '#39ff14' }) {
       <div style={{
         position: 'absolute', top: 10, left: 14, fontSize: 10, color: dim,
         fontFamily: 'ui-monospace, monospace', letterSpacing: 2,
-      }}>FLATLAY ▸ SS26 ▸ 6 ITEMS</div>
+      }}>FLATLAY ▸ SS26 ▸ {items.length} ITEMS{shopLoading ? ' ▸ syncing…' : shopError ? ' ▸ offline' : ''}</div>
       <div style={{
         position: 'absolute', top: 10, right: 14, fontSize: 10, color: dim,
         fontFamily: 'ui-monospace, monospace', letterSpacing: 2,
       }}>// click any item to inspect</div>
 
       {/* items */}
-      {items.map((it) => {
+      {scaledItems.map((it) => {
         const sold = it.stock === 'sold out';
         const isHover = hover === it.sku;
         const isOpen = open === it.sku;
@@ -99,11 +217,16 @@ function FlatlayShop({ accent = '#39ff14' }) {
               zIndex: isOpen ? 60 : isHover ? 50 : it.z, cursor: 'pointer',
             }}>
             <div style={{
-              position: 'absolute', top: -10, left: '50%', width: 60, height: 16,
-              background: 'rgba(255,255,255,0.12)', border: `1px dashed ${faint}`,
-              transform: 'translateX(-50%) rotate(-4deg)', zIndex: 2,
-            }} />
-            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} />
+              position: 'absolute', top: -32, left: '50%',
+              transform: 'translateX(-50%)', zIndex: 2,
+              fontSize: 16, fontWeight: 700, color: green,
+              fontFamily: 'ui-monospace, monospace',
+              textShadow: `0 0 8px ${green}, 0 0 16px ${green}55`,
+              whiteSpace: 'nowrap', pointerEvents: 'none',
+            }}>
+              {it.name.replace(/_/g, ' ')}
+            </div>
+            <ItemPlaceholder kind={it.kind} glyph={it.glyph} accent={green} image={it.image} name={it.name} />
             <div style={{
               position: 'absolute', top: -14, right: -18, transform: `rotate(${-it.r + 6}deg)`,
               background: green, color: '#000', padding: '4px 8px 4px 14px',
@@ -128,7 +251,7 @@ function FlatlayShop({ accent = '#39ff14' }) {
 
       {/* detail card — pinned near the open item, no rotation */}
       {open && (() => {
-        const it = items.find((x) => x.sku === open);
+        const it = scaledItems.find((x) => x.sku === open);
         if (!it) return null;
         // anchor card relative to item; flip to left side if item is right of center
         const onRight = it.x > 50;
@@ -226,11 +349,20 @@ function Row({ k, v, vColor, green, dim }) {
   );
 }
 
-function ItemPlaceholder({ kind, glyph, accent }) {
+function ItemPlaceholder({ kind, glyph, accent, image, name }) {
   const g = accent;
   const dropShadow = `drop-shadow(3px 4px 0 rgba(0,0,0,.6)) drop-shadow(0 0 8px rgba(57,255,20,.25))`;
   const ph = { fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
     letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase' };
+  const label = (name || '').replace(/_/g, ' ');
+
+  if (image) return (
+    <div style={{ filter: dropShadow, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'rgba(57,255,20,.55)',
+        letterSpacing: 1, textAlign: 'center', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>
+      <img src={image} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 4 }} alt={label} />
+    </div>
+  );
 
   if (kind === 'tee') return (
     <div style={{ filter: dropShadow, position: 'relative' }}>
