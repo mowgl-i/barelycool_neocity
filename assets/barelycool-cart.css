@@ -1,0 +1,69 @@
+/*
+ * barely.cool cart page theme — scoped to the cart page only (body.template-cart).
+ * Overrides Dawn's color-scheme CSS variables so the /cart page the buyer lands
+ * on matches the neocities site (green-on-black CRT) before they continue to
+ * Shopify's hosted checkout. Nothing outside the cart page is affected.
+ */
+
+/* Recolor every color-scheme wrapper rendered on the cart page. Dawn redefines
+   these vars per .color-{scheme} block, so we override on the wrappers too, not
+   just the body. */
+body.template-cart,
+body.template-cart [class*='color-'] {
+  --color-background: 2, 4, 10;
+  --color-foreground: 57, 255, 20;
+  --color-background-contrast: 57, 255, 20;
+  --color-shadow: 57, 255, 20;
+  --color-button: 57, 255, 20;
+  --color-button-text: 2, 4, 10;
+  --color-secondary-button: 2, 4, 10;
+  --color-secondary-button-text: 57, 255, 20;
+  --color-link: 57, 255, 20;
+  --color-badge-foreground: 57, 255, 20;
+  --color-badge-background: 2, 4, 10;
+  --color-badge-border: 57, 255, 20;
+  --gradient-background: #02040a;
+}
+
+/* Mono type to match the terminal aesthetic — uses system fonts, no extra load. */
+body.template-cart {
+  --font-body-family: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
+  --font-heading-family: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
+  background-color: #02040a;
+}
+
+/* Green phosphor glow on the headings and the checkout button. */
+body.template-cart .cart__contents .title,
+body.template-cart h1,
+body.template-cart h2 {
+  text-shadow: 0 0 6px rgba(57, 255, 20, 0.7);
+}
+
+body.template-cart .cart__checkout-button,
+body.template-cart .cart__dynamic-checkout-buttons .shopify-payment-button__button {
+  text-shadow: 0 0 4px rgba(2, 4, 10, 0.6);
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.45);
+  border-radius: 0;
+}
+
+/* Square, hard-edged inputs/buttons to match the CRT look. */
+body.template-cart .button,
+body.template-cart .field__input,
+body.template-cart .quantity,
+body.template-cart .cart-item__quantity-wrapper {
+  border-radius: 0;
+}
+
+/* CRT scanline veil over the whole cart page (decorative, non-interactive). */
+body.template-cart::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0 1px,
+    transparent 1px 3px
+  );
+}
