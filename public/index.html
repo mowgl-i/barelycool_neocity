@@ -131,6 +131,7 @@
       let out = [{ kind: 'cmd', text: `$ ${raw}` }];
       if (cmd === 'help') {
         out.push({ kind: 'sys', text: '  cart      ▸ show cart' });
+        out.push({ kind: 'sys', text: '  rm <#>    ▸ remove item #' });
         out.push({ kind: 'sys', text: '  clear     ▸ empty cart' });
         out.push({ kind: 'sys', text: '  checkout  ▸ go to checkout' });
         out.push({ kind: 'sys', text: '  ls        ▸ list items' });
@@ -144,6 +145,18 @@
           });
           const total = cart.reduce((s, x) => s + x.price, 0);
           out.push({ kind: 'ok', text: `▸ ${cart.length} item${cart.length > 1 ? 's' : ''} ▸ subtotal $${total}.00` });
+        }
+      } else if (cmd.startsWith('rm ') || cmd.startsWith('remove ')) {
+        // Remove a single line item by its 1-based number (as shown by "cart").
+        // Index-based so duplicate SKUs each drop independently.
+        const n = parseInt(cmd.split(/\s+/)[1], 10);
+        if (!n || n < 1 || n > cart.length) {
+          out.push({ kind: 'err', text: '▸ usage: rm <#> — run "cart" to see item numbers' });
+        } else {
+          const gone = cart[n - 1];
+          setCart((c) => c.filter((_, i) => i !== n - 1));
+          const sz = gone.size ? ` [${gone.size}]` : '';
+          out.push({ kind: 'ok', text: `▸ removed: ${gone.name}${sz} (${gone.sku})` });
         }
       } else if (cmd === 'clear') {
         setCart([]);
@@ -445,8 +458,17 @@
                 <div style={{ color: rgba(0.45), fontSize: 11 }}>{'{ "items": [] }'}</div>
               ) : cart.map((it, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
-                  fontSize: 12, padding: '1px 0' }}>
-                  <span style={{ color: '#fff' }}>{it.sku}</span>
+                  alignItems: 'center', gap: 6, fontSize: 12, padding: '1px 0' }}>
+                  <button
+                    onClick={() => runCmd('rm ' + (i + 1))}
+                    title="remove"
+                    aria-label={'remove ' + it.sku}
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: '#ff5544', fontFamily: 'inherit', fontSize: 13, lineHeight: 1,
+                      padding: '0 2px', flexShrink: 0,
+                    }}>×</button>
+                  <span style={{ color: '#fff', flex: 1 }}>{it.sku}</span>
                   <span style={{ color: accent }}>${it.price}</span>
                 </div>
               ))}
