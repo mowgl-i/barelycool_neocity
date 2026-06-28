@@ -5,6 +5,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
+
+    {%- comment -%}
+      Cart/checkout-only store: the Shopify storefront pages should never really be browsed
+      (all browsing lives on barely.cool). Send any storefront page back to barely.cool,
+      EXCEPT the cart and checkout pages so the buy flow keeps working. This also catches the
+      checkout header logo, which is hard-linked to the storefront homepage on non-Plus plans.
+    {%- endcomment -%}
+    {%- unless request.page_type == 'cart' or request.page_type == 'checkout' -%}
+      <meta http-equiv="refresh" content="0; url=https://barely.cool">
+      <script>window.location.replace('https://barely.cool');</script>
+    {%- endunless -%}
     <link rel="canonical" href="{{ canonical_url }}">
 
     {%- if settings.favicon != blank -%}
