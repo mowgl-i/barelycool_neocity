@@ -202,7 +202,9 @@
         maxWidth: 1100, margin: '0 auto',
         padding: isMobile ? '12px 10px 340px' : '20px 18px 220px',
         position: 'relative',
+        animation: 'bcPageIn .5s ease both',
       }}>
+        <style>{`@keyframes bcPageIn{from{opacity:0}to{opacity:1}}`}</style>
         {routing && (
           <div style={{
             position: 'fixed', inset: 0, zIndex: 6000, background: '#02040a',
@@ -511,7 +513,8 @@
   }
 
   function Root() {
-    const [unlocked, setUnlocked] = React.useState(isUnlocked);
+    // Intro plays every visit — nothing is remembered.
+    const [unlocked, setUnlocked] = React.useState(false);
     if (!unlocked) return <Gate onUnlock={() => setUnlocked(true)} />;
     return <Page />;
   }
